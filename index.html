@@ -6,6 +6,17 @@
     <title>HydroPower Engineering Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
         body {
@@ -44,7 +55,7 @@
             animation: electric-move linear infinite;
         }
         @keyframes electric-move {
-            to { stroke-dashoffset: -16; } /* Nilai negatif agar mengalir ke kanan */
+            to { stroke-dashoffset: -16; }
         }
 
         /* Animasi Gardu Listrik (Glow & Pulse) */
@@ -69,9 +80,8 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- PANEL INPUT -->
             <div class="lg:col-span-4 space-y-6">
-                <div class="glass-panel p-6 shadow-2xl">
+                <div class="glass-panel p-6 shadow-2xl tex2jax_ignore">
                     <h3 class="text-lg font-bold mb-6 flex items-center gap-2 border-b border-slate-700 pb-4">
                         <span>🎛️</span> Control Station
                     </h3>
@@ -103,14 +113,40 @@
                     </div>
                 </div>
 
-                <div class="glass-panel p-6 border-l-4 border-blue-500">
+                <div class="glass-panel p-6 border-l-4 border-amber-500 bg-slate-900/50">
+                    <h4 class="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span>📐</span> Perhitungan Teoritis Real-Time
+                    </h4>
+                    <div class="text-xs text-slate-300 space-y-4">
+                        <div>
+                            <p class="text-slate-400 mb-1 font-semibold">1. Daya Potensial Air ($P_{pot}$):</p>
+                            <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center text-sm">
+                                $$P_{pot} = \rho \cdot g \cdot Q \cdot H$$
+                            </div>
+                            <div id="calc-pot" class="mt-1 font-mono text-amber-300 text-[11px] tex2jax_ignore"></div>
+                        </div>
+                        
+                        <div>
+                            <p class="text-slate-400 mb-1 font-semibold">2. Daya Listrik Aktual ($P_{out}$):</p>
+                            <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center text-sm">
+                                $$P_{out} = P_{pot} \cdot \eta$$
+                            </div>
+                            <div id="calc-out" class="mt-1 font-mono text-emerald-400 text-[11px] tex2jax_ignore"></div>
+                        </div>
+
+                        <div class="text-[10px] text-slate-500 border-t border-slate-800 pt-2">
+                            *Konstanta: $\rho = 1000 \text{ kg/m}^3$ (Massa jenis air), $g = 9.81 \text{ m/s}^2$ (Gravitasi).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 border-l-4 border-blue-500 tex2jax_ignore">
                     <h4 class="text-sm font-bold text-blue-400 uppercase tracking-tighter mb-3">Laporan Analisis Fisika</h4>
                     <div id="teks-analisis" class="text-sm text-slate-300 leading-relaxed space-y-3"></div>
                 </div>
             </div>
 
-            <!-- PANEL VISUAL -->
-            <div class="lg:col-span-8 space-y-6">
+            <div class="lg:col-span-8 space-y-6 tex2jax_ignore">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="glass-panel p-4 text-center">
                         <p class="text-[10px] uppercase text-slate-500">Daya Potensial</p>
@@ -126,39 +162,30 @@
                     </div>
                 </div>
 
-                <!-- DIAGRAM SISTEM -->
                 <div class="glass-panel p-4 overflow-hidden flex flex-col items-center justify-center min-h-[450px]">
                     <svg viewBox="0 0 800 450" class="w-full h-full">
-                        <!-- Water Reservoir (Wadah) -->
                         <rect x="50" y="100" width="150" height="250" fill="#1e293b" />
-                        <!-- Dinamic Water Level -->
                         <rect id="v-water" x="50" y="100" width="150" height="0" fill="#3b82f6" fill-opacity="0.6" />
                         <text x="50" y="90" fill="#94a3b8" font-size="10" font-weight="bold">DAM / RESERVOIR</text>
 
-                        <!-- Penstock (Pipa) -->
                         <path d="M 200 320 Q 350 320 460 360" stroke="#334155" stroke-width="24" fill="none" />
                         <path id="v-flow" d="M 200 320 Q 350 320 460 360" stroke="#60a5fa" stroke-width="14" fill="none" class="flow-line" />
 
-                        <!-- Turbine Housing -->
                         <circle cx="500" cy="360" r="45" fill="#334155" />
                         
-                        <!-- Turbine Baling-baling -->
                         <g id="v-turbine">
                             <line x1="500" y1="330" x2="500" y2="390" stroke="#fbbf24" stroke-width="6" stroke-linecap="round" />
                             <line x1="470" y1="360" x2="530" y2="360" stroke="#fbbf24" stroke-width="6" stroke-linecap="round" />
                             <circle cx="500" cy="360" r="12" fill="#d97706" />
                         </g>
 
-                        <!-- Shaft & Generator -->
                         <rect x="540" y="355" width="40" height="10" fill="#94a3b8" /> 
                         <rect x="580" y="320" width="100" height="80" fill="#475569" rx="4" />
                         <circle cx="630" cy="360" r="25" fill="#1e293b" stroke="#64748b" /> 
                         <text x="585" y="310" fill="#cbd5e1" font-size="9">GENERATOR UNIT</text>
                         
-                        <!-- Power Line (Diubah untuk bisa dianimasikan) -->
                         <path id="v-grid-line" d="M 680 360 L 750 360 L 750 200" stroke="#10b981" stroke-width="4" fill="none" />
                         
-                        <!-- Power Grid Box (Ditambahkan ID) -->
                         <g id="v-grid-box">
                             <rect x="720" y="150" width="60" height="50" fill="#064e3b" rx="4" stroke="#10b981" stroke-width="2" />
                             <text x="726" y="140" fill="#10b981" font-size="10" font-weight="bold">POWER GRID</text>
@@ -175,31 +202,34 @@
         window.debit_saat_ini = 20;
 
         function jalankanSimulasi() {
-            // Mengambil inputan
             const debit_air = parseFloat(document.getElementById('in-debit').value);
             const tinggi_jatuh = parseFloat(document.getElementById('in-head').value);
             const efisiensi = parseFloat(document.getElementById('in-eta').value);
             
             window.debit_saat_ini = debit_air;
 
-            // Memperbarui Teks Label UI
             document.getElementById('lbl-debit').innerText = debit_air + " m³/s";
             document.getElementById('lbl-head').innerText = tinggi_jatuh + " m";
             document.getElementById('lbl-eta').innerText = efisiensi;
 
-            // Rumus Fisika Tenaga Air
             const gravitasi = 9.81;
             const massa_jenis_air = 1000;
-            const daya_potensial = (massa_jenis_air * gravitasi * debit_air * tinggi_jatuh) / 1000; // dalam kW
+            
+            const daya_potensial = (massa_jenis_air * gravitasi * debit_air * tinggi_jatuh) / 1000; 
             const daya_listrik = daya_potensial * efisiensi;
             const energi_terbuang = daya_potensial - daya_listrik;
 
-            // Update Panel Output
             document.getElementById('out-pot').innerText = Math.round(daya_potensial).toLocaleString('id-ID') + " kW";
             document.getElementById('out-listrik').innerText = Math.round(daya_listrik).toLocaleString('id-ID') + " kW";
             document.getElementById('out-loss').innerText = Math.round(energi_terbuang).toLocaleString('id-ID') + " kW";
 
-            // Visual 1: Ketinggian Air di Dam
+            document.getElementById('calc-pot').innerHTML = `
+                ➔ 1000 × 9.81 × ${debit_air} × ${tinggi_jatuh} = <b>${Math.round(daya_potensial * 1000).toLocaleString('id-ID')} Watt</b> (${Math.round(daya_potensial).toLocaleString('id-ID')} kW)
+            `;
+            document.getElementById('calc-out').innerHTML = `
+                ➔ ${Math.round(daya_potensial).toLocaleString('id-ID')} kW × ${efisiensi} = <b>${Math.round(daya_listrik).toLocaleString('id-ID')} kW</b>
+            `;
+
             const tinggi_maksimal_visual = 250;
             const tinggi_visual_saat_ini = (tinggi_jatuh / 300) * tinggi_maksimal_visual;
             const sumbu_y_baru = 350 - tinggi_visual_saat_ini;
@@ -210,7 +240,6 @@
                 ease: "power2.out"
             });
 
-            // Visual 2: Kecepatan Aliran Air ke Pipa
             const elemen_aliran = document.getElementById('v-flow');
             if (debit_air > 0) {
                 elemen_aliran.style.display = "block";
@@ -220,7 +249,6 @@
                 elemen_aliran.style.display = "none";
             }
 
-            // Visual 3: Animasi Kabel Listrik & Grid
             const jalur_kabel = document.getElementById('v-grid-line');
             const kotak_grid = document.getElementById('v-grid-box');
             
@@ -228,7 +256,6 @@
                 jalur_kabel.classList.add('electric-flow');
                 kotak_grid.classList.add('grid-pulse');
                 
-                // Semakin besar daya, arus animasi mengalir makin cepat
                 const kecepatan_listrik = Math.max(0.1, 1.5 - (daya_listrik / 50000));
                 jalur_kabel.style.animationDuration = kecepatan_listrik + "s";
                 kotak_grid.style.animationDuration = kecepatan_listrik + "s";
@@ -237,14 +264,12 @@
                 kotak_grid.classList.remove('grid-pulse');
             }
 
-            // Panggil fungsi laporan analisis
             perbaruiLaporanAnalisis(debit_air, tinggi_jatuh, efisiensi, daya_listrik);
         }
 
         function perbaruiLaporanAnalisis(debit, head, efisiensi, listrik) {
             let html_analisis = "";
             
-            // 1. Analisis Ketinggian (Head)
             if (head >= 150) {
                 html_analisis += `<p>🟢 <b>Head Tinggi (${head}m):</b> Energi potensial gravitasi sangat besar. Sangat ideal memanfaatkan tekanan hidrostatik kuat untuk menghantam sudut turbin impuls (seperti tipe Pelton).</p>`;
             } else if (head >= 50) {
@@ -253,7 +278,6 @@
                 html_analisis += `<p>⚪ <b>Head Rendah (${head}m):</b> Tekanan air minim. Sistem terpaksa mengandalkan volume aliran air yang besar untuk memutar baling-baling turbin (cocok untuk tipe Kaplan).</p>`;
             }
 
-            // 2. Analisis Debit Air (Q)
             if (debit >= 100) {
                 html_analisis += `<p>🌊 <b>Debit Masif (${debit} m³/s):</b> Aliran air luar biasa deras. Massa air mentransfer momen gaya (torsi) yang sangat kuat pada poros turbin.</p>`;
             } else if (debit >= 30) {
@@ -262,7 +286,6 @@
                 html_analisis += `<p>💧 <b>Debit Minim (${debit} m³/s):</b> Aliran air terbatas. Sistem harus memiliki ketinggian (Head) ekstra ekstrem untuk menutupi minimnya pasokan air ini.</p>`;
             }
             
-            // 3. Analisis Efisiensi (η)
             if (efisiensi >= 0.85) {
                 html_analisis += `<p>✨ <b>Sistem Optimal (η = ${efisiensi}):</b> Konversi berjalan nyaris sempurna! Rugi-rugi daya seperti gesekan bearing mekanik dan panas induksi pada kawat tembaga sangat terkendali.</p>`;
             } else if (efisiensi >= 0.6) {
@@ -271,8 +294,6 @@
                 html_analisis += `<p>🔴 <b>Rugi Daya Masif (η = ${efisiensi}):</b> Kritis. Sistem membuang terlalu banyak energi. Terdapat indikasi aus mekanik parah atau resistansi tinggi pada kumparan generator.</p>`;
             }
             
-            // 4. Kesimpulan Output Rumah Tangga
-            // Asumsi 1 Rumah menggunakan daya listrik 450 Watt (0.45 kW)
             const estimasi_rumah = Math.floor(listrik / 0.45);
             html_analisis += `
                 <div class="mt-4 p-3 bg-emerald-500/10 rounded-lg text-xs border border-emerald-500/30">
@@ -282,7 +303,6 @@
             document.getElementById('teks-analisis').innerHTML = html_analisis;
         }
 
-        // Animasi Loop Turbin (Berjalan terus menerus)
         function animasi_berjalan() {
             if (window.debit_saat_ini > 0) {
                 const kecepatan_putar = window.debit_saat_ini * 0.15; 
@@ -292,7 +312,6 @@
             requestAnimationFrame(animasi_berjalan);
         }
 
-        // Jalankan saat pertama kali dimuat
         jalankanSimulasi();
         animasi_berjalan();
     </script>
